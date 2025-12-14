@@ -1,0 +1,322 @@
+import React, { useState, useEffect } from 'react';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Link, Avatar, Menu, MenuItem } from '@mui/material';
+import { FaLeaf } from 'react-icons/fa';
+import { FiSearch } from 'react-icons/fi';
+import { BsCart2 } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+
+const Navbar = ({ onCartClick, onSearch }) => {
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  const isAdmin = currentUser && currentUser.isAdmin;
+  const isLoggedIn = !!currentUser;
+  const [cartCount, setCartCount] = useState(() => {
+    const stored = localStorage.getItem('cart');
+    return stored ? JSON.parse(stored).length : 0;
+  });
+
+  useEffect(() => {
+    const handler = () => {
+      const stored = localStorage.getItem('cart');
+      setCartCount(stored ? JSON.parse(stored).length : 0);
+    };
+    window.addEventListener('storage', handler);
+    window.addEventListener('cartUpdated', handler);
+    handler();
+    return () => {
+      window.removeEventListener('storage', handler);
+      window.removeEventListener('cartUpdated', handler);
+    };
+  }, []);
+
+  const handleAvatarClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+  const handleSignOut = () => {
+    localStorage.removeItem('currentUser');
+    setAnchorEl(null);
+    navigate('/');
+  };
+  const handleEditProfile = () => {
+    setAnchorEl(null);
+    if (currentUser && currentUser.email) {
+      navigate(`/edit-user/${currentUser.email}`);
+    }
+  };
+  const handleViewProfile = () => {
+    setAnchorEl(null);
+    navigate('/profile');
+  };
+
+  // Handle search input
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearch(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
+  return (
+    <AppBar
+      position="static"
+      elevation={0}
+      sx={{
+        bgcolor: 'rgba(255,255,255,0.85)',
+        color: '#222',
+        boxShadow: '0 2px 12px 0 rgba(56,142,60,0.08)',
+        borderBottom: '1px solid #eee',
+        backdropFilter: 'blur(8px)',
+        fontFamily: `'Poppins', 'Roboto', sans-serif`,
+      }}
+    >
+      <Toolbar sx={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        px: { xs: 1, md: 6 },
+        minHeight: 72,
+        gap: 4,
+      }}>
+        <Box display="flex" alignItems="center" gap={1} sx={{ mr: 4 }}>
+          <FaLeaf style={{ color: '#4caf50', fontSize: 32 }} />
+          <Typography variant="h5" fontWeight={700} sx={{ color: '#388e3c', letterSpacing: 1, fontFamily: `'Poppins', 'Roboto', sans-serif` }}>
+            AgriFlow
+          </Typography>
+        </Box>
+        <Box display="flex" alignItems="center" gap={2} sx={{ flexGrow: 1, justifyContent: 'center' }}>
+          <Link
+            component="button"
+            underline="none"
+            color="inherit"
+            fontSize={18}
+            fontWeight={500}
+            sx={{
+              px: 2,
+              py: 0.5,
+              borderRadius: 3,
+              transition: 'background 0.2s',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: `'Poppins', 'Roboto', sans-serif`,
+              '&:hover': { background: '#e8f5e9', color: '#388e3c' },
+            }}
+            onClick={() => navigate('/')}
+          >
+            Home
+          </Link>
+          {/* <Link
+            href="#"
+            underline="none"
+            color="inherit"
+            fontSize={18}
+            fontWeight={500}
+            sx={{
+              px: 2,
+              py: 0.5,
+              borderRadius: 3,
+              transition: 'background 0.2s',
+              fontFamily: `'Poppins', 'Roboto', sans-serif`,
+              '&:hover': { background: '#e8f5e9', color: '#388e3c' },
+            }}
+          >
+            Menu
+          </Link> */}
+          {/* <Link
+            href="#"
+            underline="none"
+            color="inherit"
+            fontSize={18}
+            fontWeight={500}
+            sx={{
+              px: 2,
+              py: 0.5,
+              borderRadius: 3,
+              transition: 'background 0.2s',
+              fontFamily: `'Poppins', 'Roboto', sans-serif`,
+              '&:hover': { background: '#e8f5e9', color: '#388e3c' },
+            }}
+          >
+            Contact Us
+          </Link> */}
+          {isLoggedIn ? (
+          <Link
+            component="button"
+            underline="none"
+            color="inherit"
+            fontSize={18}
+            fontWeight={500}
+            sx={{
+              px: 2,
+              py: 0.5,
+              borderRadius: 3,
+              transition: 'background 0.2s',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: `'Poppins', 'Roboto', sans-serif`,
+              '&:hover': { background: '#e8f5e9', color: '#388e3c' },
+            }}
+            onClick={() => navigate('/reviewDashBoard')}
+          >
+            Reviews
+          </Link>
+          ) : (
+            <></>
+          )}
+        </Box>
+        {isAdmin && (
+            <Link
+              component="button"
+              underline="none"
+              color="inherit"
+              fontSize={18}
+              fontWeight={500}
+              sx={{
+                px: 2,
+                py: 0.5,
+                borderRadius: 3,
+                transition: 'background 0.2s',
+                background: '#2e7d32',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: `'Poppins', 'Roboto', sans-serif`,
+                '&:hover': { 
+                  background: '#1b5e20',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                },
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mr: 2
+              }}
+              onClick={() => navigate('/admin-dashboard')}
+            >
+              Admin Dashboard
+            </Link>
+          )}
+        <Box display="flex" alignItems="center" gap={2} sx={{ justifyContent: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              bgcolor: '#f1f8e9',
+              borderRadius: 3,
+              px: 1.5,
+              py: 0.5,
+              boxShadow: '0 1px 4px 0 rgba(76,175,80,0.06)',
+              fontFamily: `'Poppins', 'Roboto', sans-serif`,
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={search}
+              onChange={handleSearch}
+              style={{
+                border: 'none',
+                outline: 'none',
+                background: 'transparent',
+                fontSize: 16,
+                width: 200,
+                color: '#222',
+                padding: '4px 0',
+                fontFamily: 'Poppins, Roboto, sans-serif',
+              }}
+            />
+            <IconButton
+              sx={{ color: '#388e3c', ml: 0.5 }}
+              onClick={() => {}}
+              tabIndex={-1}
+            >
+              <FiSearch size={22} />
+            </IconButton>
+          </Box>
+          {isLoggedIn ? (
+            <>
+              <Box sx={{ position: 'relative' }}>
+                <IconButton
+                  color="success"
+                  onClick={() => onCartClick && onCartClick()}
+                  sx={{ bgcolor: '#e8f5e9', borderRadius: '50%', p: 1, boxShadow: 2 }}
+                >
+                  <ShoppingCartIcon sx={{ fontSize: 28, color: '#388e3c' }} />
+                  {cartCount > 0 && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 2,
+                        right: 2,
+                        bgcolor: '#388e3c',
+                        color: '#fff',
+                        borderRadius: '50%',
+                        width: 20,
+                        height: 20,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        boxShadow: 1,
+                        fontFamily: `'Poppins', 'Roboto', sans-serif`,
+                      }}
+                    >
+                      {cartCount}
+                    </Box>
+                  )}
+                </IconButton>
+              </Box>
+
+              <IconButton onClick={handleAvatarClick} sx={{ p: 0 }}>
+                <Avatar sx={{ bgcolor: '#388e3c', color: '#fff', fontFamily: `'Poppins', 'Roboto', sans-serif` }}>
+                  {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+                </Avatar>
+              </IconButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                sx={{ fontFamily: `'Poppins', 'Roboto', sans-serif` }}
+              >
+                <MenuItem disabled sx={{ fontFamily: `'Poppins', 'Roboto', sans-serif` }}>{currentUser.name || 'User'}</MenuItem>
+                <MenuItem onClick={handleViewProfile} sx={{ fontFamily: `'Poppins', 'Roboto', sans-serif` }}>View Profile</MenuItem>
+                <MenuItem onClick={handleEditProfile} sx={{ fontFamily: `'Poppins', 'Roboto', sans-serif` }}>Edit Profile</MenuItem>
+                <MenuItem onClick={handleSignOut} sx={{ fontFamily: `'Poppins', 'Roboto', sans-serif` }}>Sign out</MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button
+              variant="contained"
+              sx={{
+                borderRadius: 8,
+                px: 3,
+                fontWeight: 700,
+                bgcolor: '#388e3c',
+                color: '#fff',
+                boxShadow: '0 2px 8px 0 rgba(76,175,80,0.10)',
+                textTransform: 'none',
+                fontFamily: `'Poppins', 'Roboto', sans-serif`,
+                '&:hover': { bgcolor: '#2e7031' },
+              }}
+              onClick={() => navigate('/login')}
+            >
+              Sign in
+            </Button>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
+  );
+};
+
+export default Navbar; 
